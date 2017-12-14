@@ -26,5 +26,5 @@ DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid wit
 4. To start the node on windows, double click the exe and make sure there isn't an error. The window must remain open for it to run on windows.
 5. On linux, change to the directory that the executable is located in and type `./DC-node` into the terminal. If there aren't any errors, cancel it and run `nohup ./DC-node` to run it in the background.
 
-## Disclaimer
-This was done as a fun project and is not meant to be actually used. The code is poorly written and it probably isn't protected very well against double spending. If you'd like to try it out and get some free coins, you can use my links on [https://jacobbennett.us](jacobbennett.us) to contact me.
+## About
+I started working on this in August 2017, but really only got the wallet and a minimal amount of node work done. I didn't make a goal to finish it until early December. I rewrote the node code, added some features, and compiled it using PyInstaller. It's a dumb coin but it works and I don't think there are many 17 year olds making their own cryptocurrency. This was done as a fun project and is not meant to be actually used. The code is poorly written and it probably isn't protected very well against double spending. If you'd like to try it out and get some free coins, you can use my links on [https://jacobbennett.us](jacobbennett.us) to contact me.
