@@ -26,6 +26,8 @@ class Wallet:
             'address': {'desc': 'Display wallet address', 'func': self.getAddress},
             'balance': {'desc': 'Display wallet balance', 'func': self.getBalance},
             'send': {'desc': 'Send transaction to address "send [amt] [to address]"', 'func': self.sendTx},
+            'get': {'desc': 'Get transaction info "get [txhash]"', 'func': self.getTx},
+            'last': {'desc': 'Get hash and value of last 20 transactions', 'func': self.getLast},
             'exit': {'desc': 'Exit wallet', 'func': None}
             }
 
@@ -34,7 +36,7 @@ class Wallet:
             print(color.E('\nMissing walletconf.json file!\n'))
         with open('walletconf.json', 'r') as config:
             conf = json.load(config)
-        print(color.I('\nAttempting connection to node...\n'))
+        print('\nAttempting connection to node...\n')
         TCP_IP = conf["node"]["ip"]
         TCP_PORT = conf["node"]['port']
         try:
@@ -102,8 +104,11 @@ class Wallet:
             # amt, to
             amt = float(params[0])
             to = params[1]
-            tx = self.genTx(amt, to)
-            self.sendNode(tx)
+            if len(to) == 64:
+                tx = self.genTx(amt, to)
+                self.sendNode(tx)
+            else:
+                print(color.E('\nAddress is not correct length!'))
 
 
     def genTx(self, amt, to, cmd=False):
@@ -113,7 +118,7 @@ class Wallet:
             digest = SHA256.new()
             tx = {
                     "from": self.getAddress(),
-                    "time": 1513209189,
+                    "time": time(),
                     "to": to,
                     "value": amt
                 }
@@ -132,6 +137,41 @@ class Wallet:
             print(color.E('\nNo wallet key initiated!\n'))
             return 0
 
+    def getTx(self, params, cmd=False):
+        if len(params) < 1:
+            print(color.E('\nCommand missing parameters'))
+        else:
+            hash = params[0]
+            if len(params) > 1:
+                incSig = int(params[1])
+            else:
+                incSig = 0
+            if incSig != 0:
+                incSig = 1
+            msg = {'getTx': hash, 'incSig': incSig}
+            tx = self.sendNode(msg)
+            info = tx['txInfo']
+            print('Transaction:\n')
+            print(info['from'] + ' ' + str(info['value']) + '-> ' + info['to'] + '\n')
+            print('Time: ' + str(info['time']) + '\n')
+            if 'public_key' in info:
+                print('Public Key: ' + info['public_key'] + '\n')
+            if 'signature' in info:
+                print('Signature: ' + info['signature'] + '\n')
+
+    def getLast(self, cmd=False):
+        msg = {'recent': self.getAddress()}
+        txs = self.sendNode(msg)
+        if txs:
+            print('Latest Transactions:\n')
+            txs = txs['txs']
+            for t in txs:
+                print(txs[t]['hash'])
+                if txs[t]['value'][0] == '-':
+                    print(color.E(txs[t]['value']+'\n'))
+                else:
+                    print(color.I(txs[t]['value']+'\n'))
+
     def help(self, cmd=False):
         print('Commands:')
         for cmd, val in self.cmds.items():
@@ -140,10 +180,10 @@ class Wallet:
 def walletPrompt(wallet):
     cmd = input('> ')
     print('\n')
-    if cmd.split(' ')[0] == 'send':
+    if cmd.split(' ')[0] == 'send' or cmd.split(' ')[0] == 'get':
         cmd = cmd.split(' ')
         params = cmd[1:]
-        wallet.cmds['send']['func'](params, cmd=True)
+        wallet.cmds[cmd[0]]['func'](params, cmd=True)
     elif cmd.split(' ')[0] == 'exit':
         sys.exit(0)
     else:
@@ -198,7 +238,7 @@ if __name__ == "__main__":
 
             """
             +"""                            Wallet v1.0.0
-                         Updated: December 13th, 2017
+                         Updated: December 14th, 2017
                                Developed by Jwb.Cloud\n
             """))
     if not os.path.exists('wallets'):

@@ -29,7 +29,7 @@ ______                 _     _____       _
 
         """
         +"""                              Node v1.0.0
-                     Updated: December 13th, 2017
+                     Updated: December 14th, 2017
                            Developed by Jwb.Cloud\n
         """))
 
@@ -45,7 +45,7 @@ class Node:
         self.s.listen(5)
 
         self.height = self.dbQuery('tx', 'SELECT COUNT(*) FROM tx')['COUNT(*)']
-        self.targetheight = 0
+        self.targetheight = 1
 
         self.dbQuery('nodes', '')
 
@@ -69,7 +69,7 @@ class Node:
         data = conn.recv(self.BUFFER_SIZE)
         if data:
             data = data.decode('utf-8')
-            print("received data:", data)
+            #print("received data:", data)
             try:
                 data = ast.literal_eval(data)
             except ValueError:
@@ -91,7 +91,7 @@ class Node:
                         break
                 conn.send(bytes(str(addrs), encoding='utf-8'))
             elif 'sync' in data:
-                starttx = data['sync']
+                starttx = data['sync'] - 120
                 txs = self.dbQuery('tx', 'SELECT * FROM tx WHERE time>? ORDER BY time ASC', (data['sync'],), qt='all')
                 count = self.dbQuery('tx', 'SELECT COUNT(*) FROM tx WHERE time>? ORDER BY time ASC', (data['sync'],))['COUNT(*)']
                 respaddr = (addr, data['port'])
@@ -109,6 +109,26 @@ class Node:
                 else:
                     msg = {'balance': 0}
                 conn.send(bytes(str(msg), encoding='utf-8'))
+            elif 'getTx' in data and data['getTx'] != 0:
+                q = self.dbQuery('tx', 'SELECT * FROM tx WHERE hash=?', (data['getTx'],))
+                msg = {"txInfo": {"hash": q['hash'], "from": q['sender'], "to": q['receiver'], "value": q['value'], "time": q['time']}}
+                if 'incSig' in data and data['incSig'] != 0:
+                    msg["txInfo"]["public_key"] = q['public_key']
+                    msg["txInfo"]["signature"] = q['signature']
+                conn.send(bytes(str(msg), encoding='utf-8'))
+            elif 'recent' in data and data['recent'] != 0:
+                q = self.dbQuery('tx', 'SELECT * FROM tx WHERE sender=? OR receiver=? ORDER BY time DESC LIMIT 20', (data['recent'],data['recent']), qt='all')
+                msg = {"txs": {}}
+                count = 19
+                if q:
+                    for r in q:
+                        msg["txs"][count] = {"hash": r['hash']}
+                        if r['sender'] == data['recent']:
+                            msg["txs"][count]["value"] = '-' + str(r['value'])
+                        else:
+                            msg["txs"][count]["value"] = '+' + str(r['value'])
+                        count -= 1
+                    conn.send(bytes(str(msg), encoding='utf-8'))
             elif 'tx' in data:
                 txhash = data['tx']['from'] + '->' + data['tx']['to'] + ':' + str(data['tx']['value']) + ':' + str(data['tx']['time'])
                 txhash = hashlib.sha256(bytes(txhash, encoding='utf-8')).hexdigest()
@@ -160,8 +180,9 @@ class Node:
                             self.dbQuery('balances', "UPDATE balances SET balance=? WHERE address=?", (newRecBal,data['tx']['to']))
                         else:
                             self.dbQuery('balances', "INSERT INTO balances VALUES (?,?)", (data['tx']['to'],data['tx']['value']))
-                    self.height += 1
-                    self.targetheight += 1
+                    self.height = self.dbQuery('tx', 'SELECT COUNT(*) FROM tx')['COUNT(*)']
+                    if self.height >= self.targetheight:
+                        self.targetheight += 1
                     self.retSuccess(conn, 'Transaction sent!')
                     self.broadcast(data)
             conn.close()
@@ -248,6 +269,7 @@ class Node:
                          (ip text, port int)''')
             selDb.commit()
         elif db == 'tx':
+            self.height = 1
             n.execute('''CREATE TABLE IF NOT EXISTS tx
                          (hash text unique, sender text, receiver text, value float, time float, public_key text, signature text)''')
             selDb.commit()
@@ -279,6 +301,6 @@ if start.height == 0:
 connect = start.checkHeight()
 if connect:
     print(color.I('\nConnected to network!\n'))
-
+print(color.I('\nRunning node on port '+str(start.TCP_PORT)+'...\n'))
 while True:
     start.acceptCons()
