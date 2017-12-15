@@ -165,7 +165,7 @@ class Wallet:
         if txs:
             print('Latest Transactions:\n')
             txs = txs['txs']
-            for t in txs:
+            for t in sorted(txs):
                 print(txs[t]['hash'])
                 if txs[t]['value'][0] == '-':
                     print(color.E(txs[t]['value']+'\n'))

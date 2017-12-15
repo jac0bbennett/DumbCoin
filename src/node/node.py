@@ -111,7 +111,8 @@ class Node:
                 conn.send(bytes(str(msg), encoding='utf-8'))
             elif 'getTx' in data and data['getTx'] != 0:
                 q = self.dbQuery('tx', 'SELECT * FROM tx WHERE hash=?', (data['getTx'],))
-                msg = {"txInfo": {"hash": q['hash'], "from": q['sender'], "to": q['receiver'], "value": q['value'], "time": q['time']}}
+                value = '%.08f' % q['value']
+                msg = {"txInfo": {"hash": q['hash'], "from": q['sender'], "to": q['receiver'], "value": value, "time": q['time']}}
                 if 'incSig' in data and data['incSig'] != 0:
                     msg["txInfo"]["public_key"] = q['public_key']
                     msg["txInfo"]["signature"] = q['signature']
@@ -122,11 +123,12 @@ class Node:
                 count = 19
                 if q:
                     for r in q:
+                        value = '%.08f' % r['value']
                         msg["txs"][count] = {"hash": r['hash']}
                         if r['sender'] == data['recent']:
-                            msg["txs"][count]["value"] = '-' + str(r['value'])
+                            msg["txs"][count]["value"] = '-' + value
                         else:
-                            msg["txs"][count]["value"] = '+' + str(r['value'])
+                            msg["txs"][count]["value"] = '+' + value
                         count -= 1
                     conn.send(bytes(str(msg), encoding='utf-8'))
             elif 'tx' in data:
@@ -134,6 +136,10 @@ class Node:
                 txhash = hashlib.sha256(bytes(txhash, encoding='utf-8')).hexdigest()
                 datahash = data['hash']
                 lasttx = self.dbQuery('tx', 'SELECT * FROM tx WHERE sender=? ORDER BY time DESC', (data['tx']['from'],))
+                decimalcheck = data['tx']['value'] - int(data['tx']['value'])
+                if decimalcheck < 0.00000001 and decimalcheck > 0:
+                    self.retError(conn, 'Only 8 decimal places allowed!')
+                    return 0
                 if txhash != datahash:
                     self.retError(conn, 'Tx Hash could not be verified!')
                     return 0
