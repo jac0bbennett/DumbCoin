@@ -34,6 +34,7 @@ class Wallet:
     def sendNode(self, msg):
         if not os.path.isfile('walletconf.json'):
             print(color.E('\nMissing walletconf.json file!\n'))
+            return 0
         with open('walletconf.json', 'r') as config:
             conf = json.load(config)
         print('\nAttempting connection to node...\n')
