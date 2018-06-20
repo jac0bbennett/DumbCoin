@@ -9,7 +9,7 @@ DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid wit
 * Zero fee
 * SqliteDB ledger allowing for easy data access by apps
 * 100% instamined
-* Susceptible to double spending
+* Most likely can double spend if you tried hard enough
 
 
 ## How to Use
