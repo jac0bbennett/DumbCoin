@@ -19,9 +19,8 @@ DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid wit
 5. To send a transaction type `send` followed by the value and address you would like to send to. (Ie. `send 10 4712f91a0a7642d5a6d05f8ab439cc3c3a9bc88477b935fff94e7725fe9e30c7`). The wallet will generate the transaction and a node will relay it to the rest of the network.
 6. Backup the your `.privkey` file in the wallets folder that it creates. This is an encrypted private key to access your wallet.
 
-## NOTE: Official node no longer running
 
-## How to run a node
+## How to run a node (Note: Official node no longer operating)
 1. Download the `DC-node` executable for either [linux](https://www.dropbox.com/s/ygi352nbh7edvbo/DC-node_linux_1.0.0.zip?dl=1) or [windows](https://www.dropbox.com/s/vkmsypbudj9rkin/DC-node_windows_1.0.0.zip?dl=1).
 2. In the `nodeconf.json` you can set the port to run on. Port `5005` is recommended.
 3. Also in the config file, make sure you have a default node set so it can initially connect to the network.
