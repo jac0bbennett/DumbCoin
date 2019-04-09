@@ -1,5 +1,7 @@
 # DumbCoin
 
+# Official node no longer running
+
 ![alt text](https://github.com/jac0bbennett/DumbCoin/blob/master/src/wallet/logo.png "Logo")
 
 DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid with little experience in the field.
@@ -10,7 +12,6 @@ DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid wit
 * SqliteDB ledger allowing for easy data access by apps
 * 100% instamined
 * Most likely can double spend if you tried hard enough
-
 
 ## How to Use
 1. Download and unzip the [wallet](https://www.dropbox.com/s/788nwndlughhqso/DC-wallet_windows_1.0.0.zip?dl=1).
