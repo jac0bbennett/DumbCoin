@@ -1,6 +1,6 @@
 # DumbCoin
 
-# Official node no longer running
+## Official node no longer running
 
 ![alt text](https://github.com/jac0bbennett/DumbCoin/blob/master/src/wallet/logo.png "Logo")
 
