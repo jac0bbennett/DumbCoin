@@ -1,7 +1,5 @@
 # DumbCoin
 
-## Official node no longer running
-
 ![alt text](https://github.com/jac0bbennett/DumbCoin/blob/master/src/wallet/logo.png "Logo")
 
 DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid with little experience in the field.
@@ -20,6 +18,8 @@ DumbCoin is a revolutionary new blockchain-less cryptocurrency made by a kid wit
 4. To check your balance type `balance` and it will be retrieved from the node.
 5. To send a transaction type `send` followed by the value and address you would like to send to. (Ie. `send 10 4712f91a0a7642d5a6d05f8ab439cc3c3a9bc88477b935fff94e7725fe9e30c7`). The wallet will generate the transaction and a node will relay it to the rest of the network.
 6. Backup the your `.privkey` file in the wallets folder that it creates. This is an encrypted private key to access your wallet.
+
+## NOTE: Official node no longer running
 
 ## How to run a node
 1. Download the `DC-node` executable for either [linux](https://www.dropbox.com/s/ygi352nbh7edvbo/DC-node_linux_1.0.0.zip?dl=1) or [windows](https://www.dropbox.com/s/vkmsypbudj9rkin/DC-node_windows_1.0.0.zip?dl=1).
