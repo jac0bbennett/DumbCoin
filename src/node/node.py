@@ -160,8 +160,8 @@ class Node:
                     r = self.dbQuery('balances', 'SELECT * FROM balances WHERE address=?', (data['tx']['to'],))
                     lasttx = self.dbQuery('tx', 'SELECT * FROM tx WHERE sender=? ORDER BY time DESC', (data['tx']['from'],))
                     if c and (c['balance'] < data['tx']['value']):
-                        if lasttx['tx']['time'] > data['tx']['time']:
-                            addback = lasttx['tx']['value'] + c['balance']
+                        if lasttx['time'] > data['tx']['time']:
+                            addback = lasttx['value'] + c['balance']
                             self.dbQuery('tx', 'DELETE FROM tx WHERE hash=?', (lasttx['hash'],))
                             self.dbQuery('balances', "UPDATE balances SET balance=? WHERE address=?", (addback,data['tx']['from']))
                     elif not c or (c['balance'] < data['tx']['value']):
