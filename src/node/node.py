@@ -29,7 +29,7 @@ ______                 _     _____       _
 
         """
         +"""                              Node v1.0.0
-                     Updated: December 14th, 2017
+                     Updated: December 13th, 2019
                            Developed by Jwb.Cloud\n
         """))
 
@@ -111,8 +111,7 @@ class Node:
                 conn.send(bytes(str(msg), encoding='utf-8'))
             elif 'getTx' in data and data['getTx'] != 0:
                 q = self.dbQuery('tx', 'SELECT * FROM tx WHERE hash=?', (data['getTx'],))
-                value = '%.08f' % q['value']
-                msg = {"txInfo": {"hash": q['hash'], "from": q['sender'], "to": q['receiver'], "value": value, "time": q['time']}}
+                msg = {"txInfo": {"hash": q['hash'], "from": q['sender'], "to": q['receiver'], "value": q['value'], "time": q['time']}}
                 if 'incSig' in data and data['incSig'] != 0:
                     msg["txInfo"]["public_key"] = q['public_key']
                     msg["txInfo"]["signature"] = q['signature']
@@ -123,12 +122,11 @@ class Node:
                 count = 19
                 if q:
                     for r in q:
-                        value = '%.08f' % r['value']
                         msg["txs"][count] = {"hash": r['hash']}
                         if r['sender'] == data['recent']:
-                            msg["txs"][count]["value"] = '-' + value
+                            msg["txs"][count]["value"] = '-' + str(r['value'])
                         else:
-                            msg["txs"][count]["value"] = '+' + value
+                            msg["txs"][count]["value"] = '+' + str(r['value'])
                         count -= 1
                     conn.send(bytes(str(msg), encoding='utf-8'))
             elif 'tx' in data:
@@ -136,10 +134,6 @@ class Node:
                 txhash = hashlib.sha256(bytes(txhash, encoding='utf-8')).hexdigest()
                 datahash = data['hash']
                 lasttx = self.dbQuery('tx', 'SELECT * FROM tx WHERE sender=? ORDER BY time DESC', (data['tx']['from'],))
-                decimalcheck = data['tx']['value'] - int(data['tx']['value'])
-                if decimalcheck < 0.00000001 and decimalcheck > 0:
-                    self.retError(conn, 'Only 8 decimal places allowed!')
-                    return 0
                 if txhash != datahash:
                     self.retError(conn, 'Tx Hash could not be verified!')
                     return 0
@@ -275,7 +269,6 @@ class Node:
                          (ip text, port int)''')
             selDb.commit()
         elif db == 'tx':
-            self.height = 1
             n.execute('''CREATE TABLE IF NOT EXISTS tx
                          (hash text unique, sender text, receiver text, value float, time float, public_key text, signature text)''')
             selDb.commit()
@@ -296,14 +289,15 @@ class Node:
 
     def genesisTx(self):
         if self.height == 0:
-            self.dbQuery('tx', 'INSERT INTO tx VALUES (?,?,?,?,?,?,?)', ('0', '0', '4712f91a0a7642d5a6d05f8ab439cc3c3a9bc88477b935fff94e7725fe9e30c7', 10000000, 0, '0', '0'))
-            self.dbQuery('balances', 'INSERT INTO balances VALUES (?,?)', ('4712f91a0a7642d5a6d05f8ab439cc3c3a9bc88477b935fff94e7725fe9e30c7', 100000000))
+            self.height = 1
+            self.dbQuery('tx', 'INSERT INTO tx VALUES (?,?,?,?,?,?,?)', ('0', '0', 'c75c31ff84140014717a0eacb8f5dd3f48b0d21c16b2c25ceb321787cf7c07c8', 10000000, 0, '0', '0'))
+            self.dbQuery('balances', 'INSERT INTO balances VALUES (?,?)', ('c75c31ff84140014717a0eacb8f5dd3f48b0d21c16b2c25ceb321787cf7c07c8', 100000000))
 
 start = Node(tcpport)
-if start.dbQuery('nodes', 'SELECT COUNT(*) FROM nodes')['COUNT(*)'] == 0:
-    start.declareTo(fallbackNode)
 if start.height == 0:
     start.genesisTx()
+if start.dbQuery('nodes', 'SELECT COUNT(*) FROM nodes')['COUNT(*)'] == 0:
+    start.declareTo(fallbackNode)
 connect = start.checkHeight()
 if connect:
     print(color.I('\nConnected to network!\n'))
